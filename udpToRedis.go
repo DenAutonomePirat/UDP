@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/redis.v5"
 	"net"
 	"os"
 )
@@ -15,6 +16,13 @@ func CheckError(err error) {
 }
 
 func main() {
+	client := redis.NewClient(&redis.Options{
+		//Network:  "unix",
+		//Addr:     "/tmp/redis.sock",
+		Addr:     "192.168.2.1:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
 	/* Lets prepare a address at any address at port 10001*/
 	ServerAddr, err := net.ResolveUDPAddr("udp", ":6000")
 	CheckError(err)
@@ -29,7 +37,7 @@ func main() {
 	for {
 		n, addr, err := ServerConn.ReadFromUDP(buf)
 		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
-
+		client.Publish("hartvigHeading", string(buf[0:n]))
 		if err != nil {
 			fmt.Println("Error: ", err)
 		}
